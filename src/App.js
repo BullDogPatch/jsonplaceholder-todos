@@ -1,0 +1,95 @@
+import React, { Component } from "react";
+import { BrowserRouter as Router, Route } from "react-router-dom";
+import Todos from "./components/Todos";
+import Header from "./components/layout/Header";
+import AddTodo from "./components/AddTodo";
+import About from "./components/pages/About";
+import axios from "axios";
+
+import "./App.css";
+
+class App extends Component {
+  state = {
+    todos: [
+      // {
+      //   id: uuidv4(),
+      //   title: "Take out the rubbish",
+      //   completed: false
+      // },
+      // {
+      //   id: uuidv4(),
+      //   title: "Walk the dog",
+      //   completed: false
+      // },
+      // {
+      //   id: uuidv4(),
+      //   title: "Meeting with boss",
+      //   completed: false
+      // }
+    ]
+  };
+
+  componentDidMount() {
+    axios
+      .get("https://jsonplaceholder.typicode.com/todos?_limit=10")
+      .then(res => this.setState({ todos: res.data }));
+  }
+
+  // toggle todos as completed or not
+  toggleComplete = id => {
+    this.setState({
+      todos: this.state.todos.map(todo => {
+        if (todo.id === id) {
+          todo.completed = !todo.completed;
+        }
+        return todo;
+      })
+    });
+  };
+
+  addTodo = title => {
+    axios
+      .post("https://jsonplaceholder.typicode.com/todos", {
+        title,
+        completed: false
+      })
+      .then(res => this.setState({ todos: [...this.state.todos, res.data] }));
+  };
+
+  // deletes a todo
+  deleteTodos = id => {
+    // console.log(id);
+    this.setState({
+      todos: [...this.state.todos.filter(todo => todo.id !== id)]
+    });
+  };
+
+  render() {
+    return (
+      <Router>
+        <div className="app">
+          <div className="container">
+            <Header />
+            <Route
+              exact
+              path="/"
+              render={props => (
+                <>
+                  <AddTodo addTodo={this.addTodo} />
+                  <Todos
+                    todos={this.state.todos}
+                    key={this.state.todos.id}
+                    toggleComplete={this.toggleComplete}
+                    deleteTodos={this.deleteTodos}
+                  />
+                </>
+              )}
+            />
+            <Route path="/about" component={About} />
+          </div>
+        </div>
+      </Router>
+    );
+  }
+}
+export default App;
